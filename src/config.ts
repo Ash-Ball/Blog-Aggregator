@@ -32,8 +32,9 @@ function validateConfig(rawcfg: any): Config {
     return cfg
 }
 
-export function setUser(user:string, cfg: Config): void {
-    console.log(`> Setting user to  ${user}`)
+export function setUser(user:string): void {
+    const cfg = readConfig()
+    console.log(`> Setting user to ${user}`)
     cfg.currentUserName = user
     writeConfig(cfg)
 }
