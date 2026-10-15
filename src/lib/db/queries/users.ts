@@ -2,6 +2,8 @@ import { db } from "..";
 import { users } from "../schema";
 import { eq, lt, gte, ne} from 'drizzle-orm';
 
+export type User = typeof users.$inferSelect;
+
 export async function createUser(name: string) {
 
     try{
@@ -17,7 +19,7 @@ export async function getUser(name: string) {
     return result
 }
 
-export async function reset(){
+export async function resetUsers(){
     const [result] = await db.delete(users)
     return result
 }
@@ -26,3 +28,4 @@ export async function getUsers(){
     return await db.select().from(users)
     
 }
+

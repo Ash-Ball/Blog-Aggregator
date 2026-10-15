@@ -8,7 +8,7 @@ type Config = {
 };
 
 function getConfigFilePath(): string{
-    const cfgPath = path.join(os.homedir(), "/gatorconfig.json")
+    const cfgPath = path.join(os.homedir(), "/Documents/BootDev/Blog Aggregator/gatorconfig.json")
     return cfgPath
 }
 

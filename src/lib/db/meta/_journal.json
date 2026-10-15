@@ -8,6 +8,27 @@
       "when": 1789678165635,
       "tag": "0000_nasty_tiger_shark",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792088048974,
+      "tag": "0001_spooky_rhodey",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792088257195,
+      "tag": "0002_loving_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792088312448,
+      "tag": "0003_supreme_zarda",
+      "breakpoints": true
     }
   ]
 }

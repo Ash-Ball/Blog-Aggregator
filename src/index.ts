@@ -1,12 +1,16 @@
 import {setUser, readConfig} from "src/config"
 import { argv, exit } from "node:process";
-import { createUser, getUser, getUsers, reset } from "./lib/db/queries/users";
+import { createUser, getUser, getUsers, resetUsers } from "./lib/db/queries/users";
+import { fetchFeed, printFeed } from "./helpers";
+import { insertFeed, resetFeeds } from "./lib/db/queries/feeds";
 
 type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
 type CommandRegisty = {
   [cmdName: string]: CommandHandler
 };
+
+const userAgent = "gator"
 
 
 function registerCommand(registry: CommandRegisty, cmdName: string, handler: CommandHandler): void {
@@ -54,7 +58,8 @@ async function registerUser(cmdName: string, ...args: string[]): Promise<void>{
 }
 
 async function resetDb(cmdName:string, ...args:string[]): Promise<void>{
-  await reset()
+  await resetUsers()
+  await resetFeeds()
 }
 
 async function users(cmdName:string, ...args:string[]): Promise<void>{
@@ -70,6 +75,23 @@ async function users(cmdName:string, ...args:string[]): Promise<void>{
 }
 
 
+async function agg(cmdName:string, ...args:string[]): Promise<void>{
+  const feedURL = args[0]
+  console.log(JSON.stringify(await fetchFeed(feedURL)))
+}
+
+async function addFeed(cmdName:string, ...args:string[]): Promise<void> {
+  if (args.length !== 2) {
+    throw new Error("Missing arguments for adding feed. Expected 2.")
+  }
+  const user = await getUser(readConfig().currentUserName)
+  const feed = await insertFeed(user.id, args[0], args[1])
+  printFeed(feed, user)
+  
+
+}
+
+
 
 
 async function main() {
@@ -78,6 +100,8 @@ async function main() {
   registerCommand(cmdRegisty, "register", registerUser)
   registerCommand(cmdRegisty, "reset", resetDb)
   registerCommand(cmdRegisty, "users", users)
+  registerCommand(cmdRegisty, "agg", agg)
+  registerCommand(cmdRegisty, "addfeed", addFeed)
 
   const args = argv.slice(3)
   const cmd = argv.slice(2)[0]
