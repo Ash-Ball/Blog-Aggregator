@@ -3,44 +3,52 @@ import os from "os";
 import path from "path";
 
 type Config = {
-    dbUrl: string
-    currentUserName: string
+  dbUrl: string;
+  currentUserName: string;
 };
 
-function getConfigFilePath(): string{
-    const cfgPath = path.join(os.homedir(), "/Documents/BootDev/Blog Aggregator/gatorconfig.json")
-    return cfgPath
+export function setUser(userName: string) {
+  console.log(`Setting user: ${userName}`)
+  const config = readConfig();
+  config.currentUserName = userName;
+  writeConfig(config);
 }
 
-function writeConfig(cgf: Config): void{
+function validateConfig(rawConfig: any) {
+  if (!rawConfig.db_url || typeof rawConfig.db_url !== "string") {
+    throw new Error("db_url is required in config file");
+  }
+  const config: Config = {
+    dbUrl: rawConfig.db_url,
+    currentUserName: rawConfig.current_user_name ?? "",
+  };
 
-    const jsonData = {
-        "db_url": cgf.dbUrl,
-        "current_user_name": cgf.currentUserName
-    }
-
-    const data = JSON.stringify(jsonData)
-    console.log(`> Updating config at: ${getConfigFilePath()}`)
-    fs.writeFileSync(getConfigFilePath(), data)
+  return config;
 }
 
+export function readConfig() {
+  const fullPath = getConfigFilePath();
 
-function validateConfig(rawcfg: any): Config {
-    const cfg = {} as Config
-    cfg.dbUrl = rawcfg.db_url
-    cfg.currentUserName = rawcfg.current_user_name ?? "unknown user"
-    return cfg
+  const data = fs.readFileSync(fullPath, "utf-8");
+  const rawConfig = JSON.parse(data);
+
+  return validateConfig(rawConfig);
 }
 
-export function setUser(user:string): void {
-    const cfg = readConfig()
-    console.log(`> Setting user to ${user}`)
-    cfg.currentUserName = user
-    writeConfig(cfg)
+function getConfigFilePath() {
+  const configFileName = "/Documents/BootDev/Blog Aggregator/gatorconfig.json"; 
+  const homeDir = os.homedir();
+  return path.join(homeDir, configFileName);
 }
 
-export function readConfig():Config {
-    const cfgData = fs.readFileSync(getConfigFilePath(), {encoding: 'utf-8'})
-    const cfg: Config = validateConfig(JSON.parse(cfgData))
-    return cfg
+function writeConfig(config: Config) {
+  const fullPath = getConfigFilePath();
+
+  const rawConfig = {
+    db_url: config.dbUrl,
+    current_user_name: config.currentUserName,
+  };
+
+  const data = JSON.stringify(rawConfig, null, 2);
+  fs.writeFileSync(fullPath, data, { encoding: "utf-8" });
 }

@@ -1,19 +1,32 @@
 import { db } from "..";
-import { feeds } from "../schema";
-import { eq, lt, gte, ne} from 'drizzle-orm';
+import { feeds, users } from "../schema";
+import { firstOrUndefined } from "./utils";
+import { eq } from "drizzle-orm";
+import { User } from "../schema";
 
-export type Feed = typeof feeds.$inferSelect;
 
-export async function insertFeed(userId:string, name:string, url: string): Promise<Feed> {
-    try{
-        const [result] = await db.insert(feeds).values({user_id: userId, name: name, url: url}).returning()
-        return result
-    } catch {
-        throw Error('Error inserting new feed into db.')
-    }
+export async function createFeed(
+  feedName: string,
+  url: string,
+  userId: string,
+) {
+  const result = await db
+    .insert(feeds)
+    .values({
+      name: feedName,
+      url,
+      userId,
+    })
+    .returning();
+
+  return firstOrUndefined(result);
 }
 
-export async function resetFeeds(){
-    const [result] = await db.delete(feeds)
-    return result
+export async function getFeeds() {
+  return db.select().from(feeds);
+}
+
+export async function lookupFeedAuthor(feedId: string): Promise<User> {
+  const [result] = await db.select({users}).from(users).innerJoin(feeds, eq(users.id, feeds.userId)).where(eq(feeds.id, feedId))
+  return result.users
 }
