@@ -1,5 +1,5 @@
 import { db } from "..";
-import { feeds, users } from "../schema";
+import { Feed, feeds, users } from "../schema";
 import { firstOrUndefined } from "./utils";
 import { eq } from "drizzle-orm";
 import { User } from "../schema";
@@ -29,4 +29,9 @@ export async function getFeeds() {
 export async function lookupFeedAuthor(feedId: string): Promise<User> {
   const [result] = await db.select({users}).from(users).innerJoin(feeds, eq(users.id, feeds.userId)).where(eq(feeds.id, feedId))
   return result.users
+}
+
+export async function lookupFeedByUrl(url:string): Promise<Feed> {
+  const [feed] = await db.select().from(feeds).where(eq(feeds.url, url)).limit(1)
+  return feed
 }
