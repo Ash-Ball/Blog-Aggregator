@@ -4,20 +4,10 @@ import { createFeed, getFeeds, lookupFeedAuthor } from "../lib/db/queries/feeds"
 import { getUser, getUserById } from "../lib/db/queries/users";
 import { Feed, User } from "../lib/db/schema";
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
   if (args.length !== 2) {
     throw new Error(`usage: ${cmdName} <feed_name> <url>`);
   }
-
-  const config = readConfig();
-  console.log(`User read as ${config.currentUserName}`)
-  const user = await getUser(config.currentUserName);
-  console.log((`User looked up as ${user?.name}`))
-
-  if (!user) {
-    throw new Error(`User ${config.currentUserName} not found`);
-  }
-
   const feedName = args[0];
   const url = args[1];
 
