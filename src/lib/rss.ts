@@ -1,4 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
+import { getNextFeedToFetch, markFeedFetched } from "./db/queries/feeds";
+import { truncateSync } from "fs";
 
 export type RSSFeed = {
   channel: {
@@ -75,4 +77,30 @@ export async function fetchFeed(feedURL: string) {
   };
 
   return rss;
+}
+
+
+export async function scrapeFeeds(){
+  const feedToFetch = await getNextFeedToFetch()
+  if (!feedToFetch){
+    throw new Error('Failed to lookup next feed to fetch from the db')
+  }
+
+  console.log(`Fetching feed ${feedToFetch.name} from ${feedToFetch.url}`)
+
+
+  const rssFeed = await fetchFeed(feedToFetch.url)
+  if (!rssFeed){
+    throw new Error(`Failed to fetch RSS Feed`)
+  }
+  markFeedFetched(feedToFetch.id)
+
+  if (rssFeed.channel.item.length > 0) {
+    console.log(`Fetched:`)
+    for (let item of rssFeed.channel.item){
+      console.log(`> ${item.title}`)
+    }
+  } else {
+    console.log(`Fetched RSS feed ${rssFeed.channel.title} but it contains no items.`)
+  }
 }

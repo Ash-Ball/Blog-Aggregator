@@ -1,8 +1,10 @@
 import { db } from "..";
 import { Feed, feeds, users } from "../schema";
 import { firstOrUndefined } from "./utils";
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { User } from "../schema";
+import { time, timestamp } from "drizzle-orm/mysql-core";
+import { syncBuiltinESMExports } from "module";
 
 
 export async function createFeed(
@@ -33,5 +35,14 @@ export async function lookupFeedAuthor(feedId: string): Promise<User> {
 
 export async function lookupFeedByUrl(url:string): Promise<Feed> {
   const [feed] = await db.select().from(feeds).where(eq(feeds.url, url)).limit(1)
+  return feed
+}
+
+export async function markFeedFetched(feedId:string) {
+  const [feed] = await db.update(feeds).set({updatedAt: new Date(), lastFetchedAt: new Date()}).where(eq(feeds.id, feedId)).returning()
+}
+
+export async function getNextFeedToFetch(): Promise<Feed>{
+  const [feed] = await db.execute(sql`select * from ${feeds} order by last_fetched_at asc nulls first limit 1`) as unknown as Feed[]
   return feed
 }
