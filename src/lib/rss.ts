@@ -1,6 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
 import { getNextFeedToFetch, markFeedFetched } from "./db/queries/feeds";
 import { truncateSync } from "fs";
+import { toWritable } from "stream/iter";
+import { createPost } from "./db/queries/posts";
 
 export type RSSFeed = {
   channel: {
@@ -96,11 +98,25 @@ export async function scrapeFeeds(){
   markFeedFetched(feedToFetch.id)
 
   if (rssFeed.channel.item.length > 0) {
-    console.log(`Fetched:`)
+    console.log(`Fetched ${rssFeed.channel.item.length} items:`)
     for (let item of rssFeed.channel.item){
-      console.log(`> ${item.title}`)
+      try {
+        const pubDate = new Date(item.pubDate + 'Z')
+        console.log(`parsed publish date: ${pubDate}`)
+        const result = await createPost(item.title, item.link, item.description, pubDate, feedToFetch.id)
+        console.log(`> Added ${result.title}`)
+      } catch (error){
+        if (error instanceof Error) {
+          console.log(`Couldn't parse published date for ${item.title}: ${error.message}`)
+        }
+        console.log(`Couldn't parse published date for ${item.title} from ${feedToFetch.name}: '${item.pubDate}' - skipping.`)
+        continue
+      }
+      
     }
   } else {
     console.log(`Fetched RSS feed ${rssFeed.channel.title} but it contains no items.`)
   }
+
+
 }

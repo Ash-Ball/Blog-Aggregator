@@ -1,10 +1,8 @@
 import { db } from "..";
 import { Feed, feeds, users } from "../schema";
 import { firstOrUndefined } from "./utils";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { User } from "../schema";
-import { time, timestamp } from "drizzle-orm/mysql-core";
-import { syncBuiltinESMExports } from "module";
 
 
 export async function createFeed(
