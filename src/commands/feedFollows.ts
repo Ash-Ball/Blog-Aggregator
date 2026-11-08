@@ -29,6 +29,9 @@ export async function handlerFeedsFollowed(cmdName:string, user: User, ...args: 
 }
 
 export async function handlerUnfollowFeed(cmdName:string, user:User, ...args:string[]){
+     if (args.length !== 1) {
+    throw new Error(`usage: ${cmdName} <url>`);
+    }
     const unfollowed = await unfollowFeed(user.id, args[0])
     console.log(`Unfollowed ${unfollowed.name}`)
 }
